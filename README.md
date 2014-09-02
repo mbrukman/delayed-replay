@@ -3,7 +3,11 @@ Delayed Replay
 
 A podcast search and playback app.
 
-Open `podcast.html` in your browser to try it out.
+Demo
+----
+
+Try a [live demo](https://mbrukman.github.io/delayed-replay/podcast.html) or
+open `podcast.html` in your browser to try it out.
 
 License
 -------
