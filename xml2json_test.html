@@ -1,0 +1,66 @@
+<!doctype html>
+<html ng-app>
+<head>
+  <meta charset="utf-8">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.1/angular.min.js"></script>
+
+  <script src="xml2json.js"></script>
+  <script src="xml2json_test.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    table, th, tr, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>xml2json test</h1>
+
+<div ng-controller="XmlToJsonCtrl">
+  <table>
+    <tr>
+      <th>Status</th>
+      <th>XML</th>
+      <th>JSON (expected)</th>
+      <th>JSON (actual, if differs from expected)</th>
+    </tr>
+    <tr ng-repeat="result in results">
+      <!-- SUCCESS -->
+      <td ng-show="result.success">
+        <b style="color:green">SUCCESS</b>
+      </td>
+
+      <!-- FAILURE -->
+      <td ng-hide="result.success">
+        <b style="color:red">FAILED</b>
+      </td>
+
+      <td><tt>{{result.xml}}</tt></td>
+      <td><tt>{{result.expected}}</tt>
+      <td><tt ng-hide="result.success">{{result.actual}}</tt></td>
+    </tr>
+  </table>
+
+  <br>
+
+  <!-- Summary -->
+  <div ng-show="success">
+    <b style="color:green">PASSED</b>
+  </div>
+
+  <div ng-hide="success">
+    <b style="color:red">FAILED</b>
+  </div>
+</div>
+
+</body>
+</html>

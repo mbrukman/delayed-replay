@@ -1,0 +1,167 @@
+<!doctype html>
+<html ng-app="Recast">
+<head>
+  <meta charset="utf-8">
+  <title>Podcast search</title>
+  <script src="third_party/angular/1.2.17/angular.min.js"></script>
+  <script src="third_party/angular-ui/bootstrap/0.4.0/ui-bootstrap-tpls.min.js"></script>
+
+  <script src="xml2json.js"></script>
+  <script src="podcast.js"></script>
+
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans:400,700|PT+Sans+Caption:400,700"
+        rel="stylesheet" type="text/css" />
+  <link href="third_party/bootstrap/2.3.2/css/bootstrap.css"
+        rel="stylesheet" type="text/css" />
+  <link href="podcast.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div style="header" align=center>
+<h1>Podcast search</h1>
+</div>
+
+<div ng-controller="SearchCtrl" style="content" align=center>
+  <form ng-submit="search()">
+    <div class="form-horizontal">
+      <input autofocus ng-model="query" size="20" type="text" />
+      <button class="btn-primary" type="submit">search</button>
+    </div>
+    <!-- TODO: properly detect whether we're serving via plain HTTP or via the
+    proxy proper to avoid showing the checkbox where it cannot be used.
+
+      <span ng-show="proxyCompatible()" class="form-inline">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="useProxy"> Use proxy
+        </label>
+      </span>
+    -->
+  </form>
+
+  <table border=0>
+    <tr ng-class-even="'even'"
+        ng-class-odd="'odd'"
+        ng-mouseenter="showLinks = true"
+        ng-mouseleave="showLinks = false"
+        ng-repeat="podcast in data.results">
+      <td valign="top">
+        <img class="clickable podcast"
+             ng-click="togglePodcast(podcast)"
+             ng-src="{{podcast.artworkUrl60}}">
+      </td>
+      <td  valign="top">
+        <span class="clickable podcastTitle"
+              ng-click="togglePodcast(podcast)">
+          {{podcast.collectionName}}
+        </span>
+        <br>
+        <span class="podcastArtist">
+          {{podcast.artistName}}
+        </span>
+        <br>
+
+        <!-- Displayed on mouseover in the row; hidden on mouseout. -->
+        <span ng-show="showLinks">
+          <a href="{{podcast.feedUrl}}">RSS</a> |
+          <a href="{{podcast.collectionViewUrl}}">iTunes</a>
+        </span>
+
+        <div modal="podcast.modal"
+             close="closeModalPodcast(podcast)">
+          <div class="modal-header">
+            <table>
+              <tr>
+                <td valign="top" class="podcast">
+                  <img class="clickable podcast"
+                       ng-click="podcastDescription = !podcastDescription"
+                       ng-src="{{podcast.artworkUrl60}}"
+                       style="vertical-align: top">
+                </td>
+                <td valign="top" align="left">
+                  <span class="podcastTitle" ng-bind="podcast.collectionName">
+                  </span>
+                  <br>
+                  <span class="podcastArtist" ng-bind="podcast.artistName">
+                  </span>
+                  <br>
+                </td>
+              </tr>
+              <tr>
+                <td colspan=2>
+                  <span class="podcastDesc"
+                        ng-bind="podcast.rss.channel.description"
+                        ng-show="podcastDescription">
+                  </span>
+                </td>
+              </tr>
+            </table>
+
+            <div align="center">
+              <span ng-show="hasAudio(activeMedia)">
+                {{formatTimeInSeconds(activeAudio.currentTime)}} /
+                {{formatTimeInSeconds(activeAudio.duration)}}
+              </span>
+              <br>
+              <span ng-show="hasAudio(activeMedia)">
+                <i class="clickable icon-fast-backward"
+                   ng-click="fastBackwardMedia(activeAudio)"
+                   ng-show="activeAudio"></i>
+                <i class="clickable icon-backward"
+                   ng-click="backwardMedia(activeAudio)"
+                   ng-show="activeAudio"></i>
+                <i class="clickable icon-stop"
+                   ng-click="stopMedia(activeAudio)"
+                   ng-show="activeAudio"></i>
+                <i class="clickable icon-play"
+                   ng-click="playMedia(activeAudio)"
+                   ng-show="activeAudio && activeAudio.paused"></i>
+                <i class="clickable icon-pause"
+                   ng-click="pauseMedia(activeAudio)"
+                   ng-show="activeAudio && !activeAudio.paused"></i>
+                <i class="clickable icon-forward"
+                   ng-click="forwardMedia(activeAudio)"
+                   ng-show="activeAudio"></i>
+              </span>
+            </div>
+          </div>
+          <div class="modal-body">
+            <table>
+              <tr ng-repeat="item in podcast.rss.channel.item">
+                <td valign="top">
+                  <!-- TODO: subtitles, text content, etc. -->
+                  {{$index + 1}}.&nbsp;
+                </td>
+                <td valign="top">
+                  <span class="episodeTitle clickable"
+                        ng-class="episodeClass(item)"
+                        ng-click="setActiveMedia(item)"
+                        ng-mouseover="item.showSummary = true"
+                        ng-mouseout="item.showSummary = false"
+                        ng-show="hasEnclosedUrl(item) && hasMedia(item)">
+                    {{item.title}}
+                    <span class="episodeSummary"
+                          ng-show="showEpisodeSummary(item)">
+                      <br>{{item.description}}
+                    </span>
+                  </span>
+
+                  <!-- The URL is not supported media: link to it directly. -->
+                  <span class="episodeTitle"
+                        ng-show="hasEnclosedUrl(item) && !hasMedia(item)">
+                    <a href="{{enclosureUrl(item)}}">{{item.title}}</a>
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <span ng-bind="activeMedia.description"></span>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+body {
+  font-family: 'PT Sans', sans-serif;
+  font-size: 11pt;
+}
+
+div.header {
+  text-align: center;
+}
+
+div.content {
+  text-align: center;
+}
+
+td.podcast, img.podcast {
+  height: 60px;
+  width: 60px;
+}
+
+.podcastTitle {
+  font-family: 'PT Sans Caption', sans-serif;
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.podcastArtist {
+}
+
+.episodeTitle {
+}
+
+.activeEpisode {
+  background: #ddd;
+}
+
+.episodeSummary {
+  background: #fff;
+  color: #999;
+  font-style: italic;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.even {
+  background: #eee;
+}
+
+.odd {
+
+}
+
+.modal-footer {
+  text-align: left;
+}
