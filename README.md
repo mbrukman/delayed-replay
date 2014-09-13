@@ -6,8 +6,8 @@ A podcast search and playback app.
 Demo
 ----
 
-Try a [live demo](https://mbrukman.github.io/delayed-replay/podcast.html) or
-open `podcast.html` in your browser to try it out.
+Try a [live demo](https://mbrukman.github.io/delayed-replay/) or
+open `index.html` in your browser to try it out.
 
 License
 -------
