@@ -14,20 +14,14 @@
 #
 ################################################################################
 #
-# Convenient targets to enable running tests, proxy, etc. easily.
+# Runs the automated tests in this directory.
+#
+################################################################################
 
 VERB = @
 
-PROXY_PORT = 8080
-
-default:
-	$(VERB) echo "Valid targets: run-proxy, test."
-
-run-proxy:
-	$(VERB) ./proxy.py $(PROXY_PORT)
-
-clean:
-	$(VERB) rm -f `find . -name \*.pyc`
-
 test:
-	$(VERB) make -C tests test
+	$(VERB) for test in *_test.py; do \
+	  echo "Running $$test ..."; \
+	  env PYTHONPATH=.. ./$$test; \
+	done
