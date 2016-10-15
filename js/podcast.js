@@ -474,4 +474,5 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
 
 SearchCtrl.$inject = ['$scope', '$http', '$templateCache', '$timeout'];
 
-angular.module('Recast', ['ui.bootstrap']).controller('SearchCtrl', SearchCtrl);
+angular.module('DelayedReplay', ['ui.bootstrap'])
+    .controller('SearchCtrl', SearchCtrl);
