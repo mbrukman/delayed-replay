@@ -16,8 +16,6 @@
 //
 // Podcast search/display and HTML5 player.
 
-angular.module('Recast', ['ui.bootstrap']);
-
 function SearchCtrl($scope, $http, $templateCache, $timeout) {
   $scope.query = '';
   $scope.code = null;
@@ -473,3 +471,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     }
   };
 }
+
+SearchCtrl.$inject = ['$scope', '$http', '$templateCache', '$timeout'];
+
+angular.module('Recast', ['ui.bootstrap']).controller('SearchCtrl', SearchCtrl);
