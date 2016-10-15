@@ -203,7 +203,7 @@ def main(argv):
         sys.stderr.write('Integral port required, received: %s' % port)
         sys.exit(2)
 
-    print 'Visit http://localhost:%d/podcast.html to search.' % port
+    print 'Visit http://localhost:%d/index.html to search.' % port
 
     # TODO: make the stdout silent (remove the GET log, etc.)
     try:
