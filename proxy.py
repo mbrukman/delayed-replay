@@ -128,17 +128,24 @@ def GetRssUrl(path):
 class ProxyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
-        target_url = GetTargetUrl(self.path)
+        REWRITES = {
+            '/': '/index.html'
+        }
+        path = self.path
+        if path in REWRITES:
+            path = REWRITES[path]
+
+        target_url = GetTargetUrl(path)
         if target_url is not None:
             self.__getTargetUrl(target_url)
             return
 
-        rss_url = GetRssUrl(self.path)
+        rss_url = GetRssUrl(path)
         if rss_url is not None:
             self.__getRssUrl(rss_url)
             return
 
-        local_path = GetLocalPath(self.path)
+        local_path = GetLocalPath(path)
         if not os.path.exists(local_path):
             self.send_response(HTTP_STATUS_NOTFOUND)
             self.end_headers()
@@ -203,7 +210,7 @@ def main(argv):
         sys.stderr.write('Integral port required, received: %s' % port)
         sys.exit(2)
 
-    print 'Visit http://localhost:%d/index.html to search.' % port
+    print 'Visit http://localhost:%d/ to search.' % port
 
     # TODO: make the stdout silent (remove the GET log, etc.)
     try:
