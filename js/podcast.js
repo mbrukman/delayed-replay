@@ -34,6 +34,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     return video;
   };
 
+  $scope.activeItem = null;
   $scope.activeMedia = null;
   $scope.activeAudio = $scope.initAudio();
   $scope.activeVideo = $scope.initVideo();
@@ -195,11 +196,11 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
   };
 
   $scope.episodeClass = function(item) {
-    return ($scope.activeMedia === item) ? 'activeEpisode' : '';
+    return ($scope.activeItem === item) ? 'activeEpisode' : '';
   };
 
   $scope.showEpisodeSummary = function(item) {
-    return ($scope.activeMedia !== item) && item.showSummary;
+    return ($scope.activeItem !== item) && item.showSummary;
   };
 
   /**
@@ -243,34 +244,40 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
 
   var SEEK_FRACTION = 0.10;
 
-  $scope.fastBackwardMedia = function(media) {
+  $scope.fastBackwardMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     media.currentTime = 0;
   };
 
-  $scope.backwardMedia = function(media) {
+  $scope.backwardMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     var delta = Math.max(1, Math.ceil(media.currentTime * SEEK_FRACTION));
     media.currentTime = Math.max(0, media.currentTime - delta);
   };
 
-  $scope.playMedia = function(media) {
+  $scope.playMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     media.play();
   };
 
-  $scope.pauseMedia = function(media) {
+  $scope.pauseMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     media.pause();
   };
 
-  $scope.stopMedia = function(media) {
+  $scope.stopMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     media.pause();
     media.currentTime = 0;
   };
 
-  $scope.forwardMedia = function(media) {
+  $scope.forwardMedia = function() {
+    var media = $scope.activeMedia;
     if (!media) return;
     var delta = Math.max(
         1, Math.ceil((media.duration - media.currentTime) * SEEK_FRACTION));
@@ -279,14 +286,16 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
 
   $scope.setActiveMedia = function(item) {
     $scope.pauseAllMedia();
-    $scope.activeMedia = item;
+    $scope.activeItem = item;
 
     if ($scope.hasAudio(item)) {
+      $scope.activeMedia = $scope.activeAudio;
       $scope.activeAudio.src = $scope.enclosureUrl(item);
       $scope.activeAudio.type = $scope.mimetype(item);
       $scope.activeAudio.load();
       $scope.activeAudio.play();
     } else if ($scope.hasVideo(item)) {
+      $scope.activeMedia = $scope.activeVideo;
       $scope.activeVideo.src = $scope.enclosureUrl(item);
       $scope.activeVideo.type = $scope.mimetype(item);
       $scope.activeVideo.load();

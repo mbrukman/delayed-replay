@@ -97,29 +97,29 @@
             </table>
 
             <div align="center">
-              <span ng-show="hasAudio(activeMedia)">
+              <span ng-show="hasAudio(activeItem)">
                 {{formatTimeInSeconds(activeAudio.currentTime)}} /
                 {{formatTimeInSeconds(activeAudio.duration)}}
               </span>
               <br>
-              <span ng-show="hasAudio(activeMedia)">
+              <span ng-show="hasAudio(activeItem)">
                 <i class="clickable icon-fast-backward"
-                   ng-click="fastBackwardMedia(activeAudio)"
+                   ng-click="fastBackwardMedia()"
                    ng-show="activeAudio"></i>
                 <i class="clickable icon-backward"
-                   ng-click="backwardMedia(activeAudio)"
+                   ng-click="backwardMedia()"
                    ng-show="activeAudio"></i>
                 <i class="clickable icon-stop"
-                   ng-click="stopMedia(activeAudio)"
+                   ng-click="stopMedia()"
                    ng-show="activeAudio"></i>
                 <i class="clickable icon-play"
-                   ng-click="playMedia(activeAudio)"
+                   ng-click="playMedia()"
                    ng-show="activeAudio && activeAudio.paused"></i>
                 <i class="clickable icon-pause"
-                   ng-click="pauseMedia(activeAudio)"
+                   ng-click="pauseMedia()"
                    ng-show="activeAudio && !activeAudio.paused"></i>
                 <i class="clickable icon-forward"
-                   ng-click="forwardMedia(activeAudio)"
+                   ng-click="forwardMedia()"
                    ng-show="activeAudio"></i>
               </span>
             </div>
@@ -155,7 +155,7 @@
             </table>
           </div>
           <div class="modal-footer">
-            <span ng-bind="activeMedia.description"></span>
+            <span ng-bind="activeItem.description"></span>
           </div>
         </div>
       </td>
