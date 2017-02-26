@@ -434,20 +434,17 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * This lets us implement the entire app in the browser, using Javascript,
    * without running our own local proxy.
    *
-   * Documentation: https://developers.google.com/feed/
-   * specifically: https://developers.google.com/feed/v1/jsondevguide
+   * Documentation: https://developer.yahoo.com/yql/guide/users-overview.html
    *
    * @param {Object} podcast
    */
-  $scope.fetchEpisodesViaGoogle = function(podcast) {
+  $scope.fetchEpisodesViaYahoo = function(podcast) {
     var feedUrl = podcast.feedUrl;
-    var baseUrl = 'https://ajax.googleapis.com/ajax/services/feed/load?';
+    var baseUrl = 'http://query.yahooapis.com/v1/public/yql?';
     var urlParams = {
+      q: 'select * from xml where url="' + feedUrl + '"',
+      format: 'xml',
       callback: 'JSON_CALLBACK',
-      num: 25,
-      output: 'xml',
-      q: feedUrl,
-      v: '1.0',
     };
     $http({
       method: 'JSONP',
@@ -455,13 +452,14 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
       cache: $templateCache,
     })
       .success(function(data, status) {
-        var jsonData = xmlToJson(data.responseData.xmlString);
+        var jsonData = xmlToJson(data.results[0]);
         initRssChannelItems(jsonData);
         podcast.rss = jsonData.rss;
       })
       .error(function(data, status) {
-        console.log('Error fetching episodes via Google: ' + data);
+        console.log('Error fetching episodes via Yahoo: ' + data);
       });
+
   };
 
   /**
@@ -476,7 +474,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     if ($scope.useProxy) {
       $scope.fetchEpisodesViaProxy(podcast);
     } else {
-      $scope.fetchEpisodesViaGoogle(podcast);
+      $scope.fetchEpisodesViaYahoo(podcast);
     }
   };
 }
