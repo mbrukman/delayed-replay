@@ -440,7 +440,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    */
   $scope.fetchEpisodesViaYahoo = function(podcast) {
     var feedUrl = podcast.feedUrl;
-    var baseUrl = 'http://query.yahooapis.com/v1/public/yql?';
+    var baseUrl = 'https://query.yahooapis.com/v1/public/yql?';
     var urlParams = {
       q: 'select * from xml where url="' + feedUrl + '"',
       format: 'xml',
