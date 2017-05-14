@@ -52,6 +52,8 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     return (protocol == 'http:') || (protocol == 'https:');
   };
 
+  $scope.useProxy = false;
+
   /**
    * @param {Object} params
    * @return {string} the constructed URL params, to be appended to the base URL.
