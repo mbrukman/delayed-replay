@@ -18,6 +18,7 @@
 
 VERB = @
 
+SERVER_PORT = 8000
 PROXY_PORT = 8080
 
 default:
@@ -25,6 +26,9 @@ default:
 
 run-proxy:
 	$(VERB) ./proxy.py $(PROXY_PORT)
+
+run-server:
+	$(VERB) python -m SimpleHTTPServer $(SERVER_PORT)
 
 clean:
 	$(VERB) rm -f `find . -name \*.pyc`
