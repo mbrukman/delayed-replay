@@ -441,20 +441,21 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * @param {Object} podcast
    */
   $scope.fetchEpisodesViaYahoo = function(podcast) {
-    var feedUrl = podcast.feedUrl;
-    var baseUrl = 'https://query.yahooapis.com/v1/public/yql?';
-    var urlParams = {
-      q: 'select * from xml where url="' + feedUrl + '"',
-      format: 'xml',
-      callback: 'JSON_CALLBACK',
-    };
+    // Note: cors.io doesn't seem to like URI-encoded parameters here (i.e.,
+    // using encodeURIComponent() which changes `:` and `/` breaks the
+    // functionality), which makes me wonder how this handles `?` and `&`
+    // characters in URLs. It may be that cors.io will only accept URI-encoded
+    // combinations for those special chars but nothing else.
+    var url = 'https://cors.io/?' + podcast.feedUrl;
     $http({
-      method: 'JSONP',
-      url: baseUrl + combineUrlParams(urlParams),
+      url: url,
       cache: $templateCache,
     })
       .success(function(data, status) {
-        var jsonData = xmlToJson(data.results[0]);
+        // cors.io returns the content of the URL, verbatim, without any
+        // structure added or removed, so we literally pass the data as received
+        // into the XML-to-JSON converter.
+        var jsonData = xmlToJson(data);
         initRssChannelItems(jsonData);
         podcast.rss = jsonData.rss;
       })
