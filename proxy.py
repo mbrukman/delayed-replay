@@ -19,23 +19,32 @@
 # Runs an HTTP proxy for fetching RSS feeds, with optional XML-to-JSON
 # conversion (can alternatively be done in Javascript instead via xml2json.js).
 #
-# Note: this file assumes Python 2.7; several incompatible API changes in
-# Python3 will affect the code below.
-#
 # TODO: break up this file into separate components:
 # * just the server / request classes
 # * local data handling (reusable!)
 # * RSS -> JSON conversion
 
-import BaseHTTPServer
-import SimpleHTTPServer
-
+from __future__ import print_function
 import json
 import os
 import re
 import sys
-import urllib2
-import urlparse
+
+if sys.version_info.major >= 3:
+    import http.server
+    import urllib.parse
+    import urllib.request
+
+    _HTTP_SERVER_CLASS = http.server.HTTPServer
+    _HTTP_REQUEST_HANDLER_CLASS = http.server.SimpleHTTPRequestHandler
+else:
+    import BaseHTTPServer
+    import SimpleHTTPServer
+    import urllib2
+    import urlparse
+
+    _HTTP_SERVER_CLASS = BaseHTTPServer.HTTPServer
+    _HTTP_REQUEST_HANDLER_CLASS = SimpleHTTPServer.SimpleHTTPRequestHandler
 
 # xmltodict is optional; operate in degraded mode if it's unavailable.
 try:
@@ -67,7 +76,7 @@ def GetMimeType(path):
     if not match:
         return None
     ext = match.group(1)
-    if MIME_TYPES.has_key(ext):
+    if ext in MIME_TYPES:
         return MIME_TYPES[ext]
     else:
         return None
@@ -86,7 +95,7 @@ def ReadBinaryFileToStream(path, stream):
     file.close()
 
 
-class ProxyServer(BaseHTTPServer.HTTPServer):
+class ProxyServer(_HTTP_SERVER_CLASS):
     pass
 
 
@@ -103,29 +112,43 @@ HTTP_HEADER_USER_AGENT = 'User-Agent'
 HTTP_USER_AGENT_NAME = 'Chrome/25'
 
 
+def UrlParse(url):
+    if sys.version_info.major >= 3:
+        return urllib.parse.urlparse(url)
+    else:
+        return urlparse.urlparse(url)
+
+
+def UrlParseQueryString(query_string):
+    if sys.version_info.major >= 3:
+        return urllib.parse.parse_qs(query_string)
+    else:
+        return urlparse.parse_qs(query_string)
+
+
 def GetLocalPath(path):
     # Strip leading '/' to concatenate it with cwd properly.
-    local_path = urlparse.urlparse(path).path[1:]
+    local_path = UrlParse(path).path[1:]
     return os.path.join(os.getcwd(), local_path)
 
 
 def GetTargetUrl(path):
-    local_url = urlparse.urlparse(path)
-    query_parts = urlparse.parse_qs(local_url.query)
+    local_url = UrlParse(path)
+    query_parts = UrlParseQueryString(local_url.query)
     if URL_PARAM_TARGET in query_parts:
         return query_parts[URL_PARAM_TARGET][0]
     return None
 
 
 def GetRssUrl(path):
-    local_url = urlparse.urlparse(path)
-    query_parts = urlparse.parse_qs(local_url.query)
+    local_url = UrlParse(path)
+    query_parts = UrlParseQueryString(local_url.query)
     if URL_PARAM_RSS in query_parts:
         return query_parts[URL_PARAM_RSS][0]
     return None
 
 
-class ProxyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class ProxyRequestHandler(_HTTP_REQUEST_HANDLER_CLASS):
 
     def do_GET(self):
         REWRITES = {
@@ -193,8 +216,12 @@ class ProxyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         headers = {
             HTTP_HEADER_USER_AGENT: HTTP_USER_AGENT_NAME,
         }
-        request = urllib2.Request(url, None, headers)
-        return urllib2.urlopen(request)
+        if sys.version_info.major >= 3:
+             request = urllib.request.Request(url, None, headers)
+             return urllib.request.urlopen(request)
+        else:
+             request = urllib2.Request(url, None, headers)
+             return urllib2.urlopen(request)
 
 
 def main(argv):
@@ -210,7 +237,7 @@ def main(argv):
         sys.stderr.write('Integral port required, received: %s' % port)
         sys.exit(2)
 
-    print 'Visit http://localhost:%d/ to search.' % port
+    print('Visit http://localhost:%d/ to search.' % port)
 
     # TODO: make the stdout silent (remove the GET log, etc.)
     try:
