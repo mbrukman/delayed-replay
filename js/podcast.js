@@ -420,6 +420,10 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    */
   $scope.fetchEpisodesViaProxy = function(podcast) {
     var feedUrl = podcast.feedUrl;
+    if (!feedUrl) {
+      console.log('[proxy] No feed URL available for podcast: ' + podcast.collectionName);
+      return false;
+    }
     var urlParams = {
       q: feedUrl,
       // rss: feedUrl,
@@ -438,7 +442,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
         return true;
       })
       .error(function(data, status) {
-        console.log('Error fetching episodes via proxy: ' + data);
+        console.log('[proxy] Error fetching episodes: ' + data);
         return false;
       });
   };
@@ -452,10 +456,15 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * @param {Object} podcast
    */
   $scope.fetchEpisodesViaRss2Json = function(podcast) {
+    var feedUrl = podcast.feedUrl;
+    if (!feedUrl) {
+      console.log('[rss2json] No feed URL available for podcast: ' + podcast.collectionName);
+      return false;
+    }
     var urlParams = {
       // rss2json.com does not seem to accept URI-encoded URL params, so we send
       // the URL as-is.
-      'rss_url': podcast.feedUrl,
+      'rss_url': feedUrl,
     };
 
     $http({
@@ -478,7 +487,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
         return true;
       })
       .error(function(data, status) {
-        console.log('Error fetching episodes via `rss2json.com`: ' + data);
+        console.log('[rss2json] Error fetching episodes: ' + JSON.stringify(data));
         return false;
       });
   };
@@ -492,10 +501,15 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * @param {Object} podcast
    */
   $scope.fetchEpisodesViaCloudQuery = function(podcast) {
+    var feedUrl = podcast.feedUrl;
+    if (!feedUrl) {
+      console.log('[cloudquery] No feed URL available for podcast: ' + podcast.collectionName);
+      return false;
+    }
     var urlParams = {
       // cloudquery.t2t.io does not seem to accept URI-encoded URL params, so we
       // send the URL as-is.
-      'url': podcast.feedUrl,
+      'url': feedUrl,
       'selectors': '*',
     };
 
@@ -510,7 +524,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
         return true;
       })
       .error(function(data, status) {
-        console.log('Error fetching episodes via `cloudquery.t2t.io`: ' + data);
+        console.log('[cloudquery] Error fetching episodes: ' + data);
         return false;
       });
   };
