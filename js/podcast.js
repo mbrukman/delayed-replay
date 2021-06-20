@@ -84,6 +84,8 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
 
   var RSS_ITEM_ENCLOSURE_TYPE = '@type';
   var RSS_ITEM_ENCLOSURE_URL = '@url';
+  // Returned in JSON from rss2json.com, not a standard feature of RSS feeds.
+  var RSS_ITEM_ENCLOSURE_LINK = 'link';
 
   /**
    * @param {Object} item
@@ -93,9 +95,18 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     // This is a hack: AngularJS shouldn't be evaluating code that loads this
     // URL, given that there's an ng-show="hasAudio(item)" guard, but seems to
     // do so anyway. Race condition on loading/searching?
-    return (item && $scope.hasEnclosedUrl(item))
-      ? item.enclosure[RSS_ITEM_ENCLOSURE_URL]
-      : '';
+    if (!item || !('enclosure' in item)) {
+      return '';
+    }
+    if (RSS_ITEM_ENCLOSURE_URL in item.enclosure) {
+      return item.enclosure[RSS_ITEM_ENCLOSURE_URL];
+    }
+    // Only available in JSON response value from rss2json.com; not part of
+    // standard RSS feeds.
+    if (RSS_ITEM_ENCLOSURE_LINK in item.enclosure) {
+      return item.enclosure[RSS_ITEM_ENCLOSURE_LINK];
+    }
+    return '';
   };
 
   /**
@@ -162,9 +173,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * @return {bool} whether or not this item has an enclosed URL.
    */
   $scope.hasEnclosedUrl = function(item) {
-    if (!('enclosure' in item)) return false;
-    if (!(RSS_ITEM_ENCLOSURE_URL in item.enclosure)) return false;
-    return item.enclosure[RSS_ITEM_ENCLOSURE_URL] != '';
+    return ($scope.enclosureUrl(item) != '');
   };
 
   /**
@@ -426,43 +435,84 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
       .success(function(data, status) {
         initRssChannelItems(data);
         podcast.rss = data.rss;
+        return true;
       })
       .error(function(data, status) {
         console.log('Error fetching episodes via proxy: ' + data);
+        return false;
       });
   };
 
   /**
-   * This lets us implement the entire app in the browser, using Javascript,
-   * without running our own local proxy.
+   * Fetch RSS feed (converted for us from XML to JSON) via `rss2json.com`.
    *
-   * Documentation: https://developer.yahoo.com/yql/guide/users-overview.html
+   * This lets us implement the entire app in the browser, using JavaScript,
+   * without running our own local proxy.
    *
    * @param {Object} podcast
    */
-  $scope.fetchEpisodesViaYahoo = function(podcast) {
-    // Note: cors.io doesn't seem to like URI-encoded parameters here (i.e.,
-    // using encodeURIComponent() which changes `:` and `/` breaks the
-    // functionality), which makes me wonder how this handles `?` and `&`
-    // characters in URLs. It may be that cors.io will only accept URI-encoded
-    // combinations for those special chars but nothing else.
-    var url = 'https://cors.io/?' + podcast.feedUrl;
+  $scope.fetchEpisodesViaRss2Json = function(podcast) {
+    var urlParams = {
+      // rss2json.com does not seem to accept URI-encoded URL params, so we send
+      // the URL as-is.
+      'rss_url': podcast.feedUrl,
+    };
+
     $http({
-      url: url,
+      url: 'https://api.rss2json.com/v1/api.json?' + combineUrlParams(urlParams),
       cache: $templateCache,
     })
       .success(function(data, status) {
-        // cors.io returns the content of the URL, verbatim, without any
-        // structure added or removed, so we literally pass the data as received
-        // into the XML-to-JSON converter.
-        var jsonData = xmlToJson(data);
-        initRssChannelItems(jsonData);
-        podcast.rss = jsonData.rss;
+        // Custom init since Rss2Json converts XML to JSON for us, but it's
+        // not in the same format as it is when we do the conversion
+        // ourselves.
+        podcast.rss = {
+          channel: {
+            item: data.items.map((item) => {
+              item.description = htmlToText(item.description),
+              item.mediaClass = MEDIA_STOP;
+              return item;
+            }),
+          },
+        };
+        return true;
       })
       .error(function(data, status) {
-        console.log('Error fetching episodes via Yahoo: ' + data);
+        console.log('Error fetching episodes via `rss2json.com`: ' + data);
+        return false;
       });
+  };
 
+  /**
+   * Fetch RSS feed via `cloudquery.t2t.io`.
+   *
+   * This lets us implement the entire app in the browser, using JavaScript,
+   * without running our own local proxy.
+   *
+   * @param {Object} podcast
+   */
+  $scope.fetchEpisodesViaCloudQuery = function(podcast) {
+    var urlParams = {
+      // cloudquery.t2t.io does not seem to accept URI-encoded URL params, so we
+      // send the URL as-is.
+      'url': podcast.feedUrl,
+      'selectors': '*',
+    };
+
+    $http({
+      url: 'https://cloudquery.t9t.io/query?' + combineUrlParams(urlParams),
+      cache: $templateCache,
+    })
+      .success(function(data, status) {
+        var jsonData = xmlToJson(data.contents[0].innerText);
+        initRssChannelItems(jsonData);
+        podcast.rss = jsonData.rss;
+        return true;
+      })
+      .error(function(data, status) {
+        console.log('Error fetching episodes via `cloudquery.t2t.io`: ' + data);
+        return false;
+      });
   };
 
   /**
@@ -477,7 +527,11 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     if ($scope.useProxy) {
       $scope.fetchEpisodesViaProxy(podcast);
     } else {
-      $scope.fetchEpisodesViaYahoo(podcast);
+      // Try fetching RSS feed with one option, fallback on another option if
+      // the first one fails.
+      if (!$scope.fetchEpisodesViaCloudQuery(podcast)) {
+        $scope.fetchEpisodesViaRss2Json(podcast);
+      }
     }
   };
 }
