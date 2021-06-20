@@ -30,7 +30,11 @@ def main(argv):
         sys.stderr.write('Syntax: %s [port]\n' % argv[0])
         sys.exit(1)
     elif len(argv) == 2:
-        port = int(argv[1])
+        try:
+            port = int(argv[1])
+        except:
+            sys.stderr.write('Integral port required, received: %s\n' % argv[1])
+            sys.exit(2)
 
     server_addr = ('127.0.0.1', port)
     print('Serving HTTP on %(host)s port %(port)d '

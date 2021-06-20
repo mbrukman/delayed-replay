@@ -234,7 +234,7 @@ def main(argv):
     try:
         port = int(argv[1])
     except:
-        sys.stderr.write('Integral port required, received: %s' % port)
+        sys.stderr.write('Integral port required, received: %s\n' % argv[1])
         sys.exit(2)
 
     print('Visit http://localhost:%d/ to search.' % port)
