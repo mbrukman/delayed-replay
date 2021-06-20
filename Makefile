@@ -20,15 +20,16 @@ VERB = @
 
 SERVER_PORT = 8000
 PROXY_PORT = 8080
+PYTHON = env python
 
 default:
 	$(VERB) echo "Valid targets: run-proxy, test."
 
 run-proxy:
-	$(VERB) ./proxy.py $(PROXY_PORT)
+	$(VERB) $(PYTHON) ./proxy.py $(PROXY_PORT)
 
 run-server:
-	$(VERB) python -m SimpleHTTPServer $(SERVER_PORT)
+	$(VERB) $(PYTHON) ./server.py $(SERVER_PORT)
 
 clean:
 	$(VERB) rm -f `find . -name \*.pyc`
