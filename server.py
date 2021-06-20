@@ -40,9 +40,9 @@ def main(argv):
           })
 
     if sys.version_info.major >= 3:
-        from http.server import HTTPServer, BaseHTTPRequestHandler
+        from http.server import HTTPServer, SimpleHTTPRequestHandler
 
-        server = HTTPServer(server_addr, BaseHTTPRequestHandler)
+        server = HTTPServer(server_addr, SimpleHTTPRequestHandler)
         server.serve_forever()
     else:
         from SimpleHTTPServer import SimpleHTTPRequestHandler
