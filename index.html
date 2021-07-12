@@ -97,30 +97,37 @@
             </table>
 
             <div align="center">
-              <span ng-show="hasAudio(activeItem)">
-                {{formatTimeInSeconds(activeAudio.currentTime)}} /
-                {{formatTimeInSeconds(activeAudio.duration)}}
+              <div ng-show="hasVideo(activeItem) && activeVideo" style="margin: 1em 0 1em">
+                <video width="80%" id="videoPlayer" controls>
+                  <source ng-src="{{getVideoUrl()}}" ng-type="{{activeVideo.type}}">
+                  This browser does not support the HTML &lt;video&gt; tag;
+                  please upgrade.
+                </video>
+              </div>
+              <span ng-show="hasMedia(activeItem)">
+                {{formatTimeInSeconds(activeMedia.currentTime)}} /
+                {{formatTimeInSeconds(activeMedia.duration)}}
               </span>
               <br>
-              <span ng-show="hasAudio(activeItem)">
+              <span ng-show="hasMedia(activeItem)">
                 <i class="clickable icon-fast-backward"
                    ng-click="fastBackwardMedia()"
-                   ng-show="activeAudio"></i>
+                   ng-show="activeMedia"></i>
                 <i class="clickable icon-backward"
                    ng-click="backwardMedia()"
-                   ng-show="activeAudio"></i>
+                   ng-show="activeMedia"></i>
                 <i class="clickable icon-stop"
                    ng-click="stopMedia()"
-                   ng-show="activeAudio"></i>
+                   ng-show="activeMedia"></i>
                 <i class="clickable icon-play"
                    ng-click="playMedia()"
-                   ng-show="activeAudio && activeAudio.paused"></i>
+                   ng-show="activeMedia && activeMedia.paused"></i>
                 <i class="clickable icon-pause"
                    ng-click="pauseMedia()"
-                   ng-show="activeAudio && !activeAudio.paused"></i>
+                   ng-show="activeMedia && !activeMedia.paused"></i>
                 <i class="clickable icon-forward"
                    ng-click="forwardMedia()"
-                   ng-show="activeAudio"></i>
+                   ng-show="activeMedia"></i>
               </span>
             </div>
           </div>

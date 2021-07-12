@@ -16,7 +16,7 @@
 //
 // Podcast search/display and HTML5 player.
 
-function SearchCtrl($scope, $http, $templateCache, $timeout) {
+function SearchCtrl($scope, $http, $templateCache, $timeout, $sce) {
   $scope.query = '';
   $scope.code = null;
   $scope.data = {results: []};
@@ -300,18 +300,21 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
     $scope.activeItem = item;
 
     if ($scope.hasAudio(item)) {
-      $scope.activeMedia = $scope.activeAudio;
-      $scope.activeAudio.src = $scope.enclosureUrl(item);
+      $scope.activeAudio.src = $sce.trustAsResourceUrl($scope.enclosureUrl(item));
       $scope.activeAudio.type = $scope.mimetype(item);
-      $scope.activeAudio.load();
-      $scope.activeAudio.play();
+      $scope.activeMedia = $scope.activeAudio;
     } else if ($scope.hasVideo(item)) {
-      $scope.activeMedia = $scope.activeVideo;
-      $scope.activeVideo.src = $scope.enclosureUrl(item);
+      $scope.activeVideo = document.getElementById('videoPlayer');
+      $scope.activeVideo.src = $sce.trustAsResourceUrl($scope.enclosureUrl(item));
       $scope.activeVideo.type = $scope.mimetype(item);
-      $scope.activeVideo.load();
-      $scope.activeVideo.play();
+      $scope.activeMedia = $scope.activeVideo;
     }
+    $scope.activeMedia.load();
+    $scope.activeMedia.play();
+  };
+
+  $scope.getVideoUrl = function() {
+    return $sce.trustAsResourceUrl($scope.activeVideo.src);
   };
 
   $scope.closeModalPodcast = function(podcast) {
@@ -326,6 +329,13 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
    * @param {Object} podcast
    */
   $scope.togglePodcast = function(podcast) {
+    // Reset state from previous episode or item to avoid carryover, e.g.,
+    // showing a video from previous episode if opening an audio-only podcast.
+    $scope.activeItem = null;
+    $scope.activeMedia = null;
+    $scope.activeVideo = $scope.initVideo();
+    $scope.activeAudio = $scope.initAudio();
+
     $scope.fetchEpisodes(podcast);
     podcast.modal = true;
   };
@@ -567,7 +577,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
   };
 }
 
-SearchCtrl.$inject = ['$scope', '$http', '$templateCache', '$timeout'];
+SearchCtrl.$inject = ['$scope', '$http', '$templateCache', '$timeout', '$sce'];
 
 angular.module('DelayedReplay', ['ui.bootstrap'])
     .controller('SearchCtrl', SearchCtrl);
