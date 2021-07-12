@@ -421,7 +421,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
   $scope.fetchEpisodesViaProxy = function(podcast) {
     var feedUrl = podcast.feedUrl;
     if (!feedUrl) {
-      console.log('[proxy] No feed URL available for podcast: ' + podcast.collectionName);
+      console.error('[proxy] No feed URL available for podcast: ' + podcast.collectionName);
       return false;
     }
     var urlParams = {
@@ -442,7 +442,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
         return true;
       })
       .error(function(data, status) {
-        console.log('[proxy] Error fetching episodes: ' + data);
+        console.error('[proxy] Error fetching episodes: ' + data);
         return false;
       });
   };
@@ -458,7 +458,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
   $scope.fetchEpisodesViaRss2Json = function(podcast) {
     var feedUrl = podcast.feedUrl;
     if (!feedUrl) {
-      console.log('[rss2json] No feed URL available for podcast: ' + podcast.collectionName);
+      console.error('[rss2json] No feed URL available for podcast: ' + podcast.collectionName);
       return false;
     }
     var urlParams = {
@@ -467,11 +467,15 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
       'rss_url': feedUrl,
     };
 
+    var fetchUrl = 'https://api.rss2json.com/v1/api.json?' + combineUrlParams(urlParams);
+    console.debug('[rss2json] Fetching podcast: ' + feedUrl);
+    console.debug('[rss2json] via URL: ' + fetchUrl);
     $http({
-      url: 'https://api.rss2json.com/v1/api.json?' + combineUrlParams(urlParams),
+      url: fetchUrl,
       cache: $templateCache,
     })
       .success(function(data, status) {
+        console.debug('[rss2json] Successfully fetched podcast.');
         // Custom init since Rss2Json converts XML to JSON for us, but it's
         // not in the same format as it is when we do the conversion
         // ourselves.
@@ -484,10 +488,12 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
             }),
           },
         };
+        console.debug('[rss2json] Reformatted podcast:');
+        console.debug(podcast.rss);
         return true;
       })
       .error(function(data, status) {
-        console.log('[rss2json] Error fetching episodes: ' + JSON.stringify(data));
+        console.error('[rss2json] Error fetching episodes: ' + JSON.stringify(data));
         return false;
       });
   };
@@ -503,7 +509,7 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
   $scope.fetchEpisodesViaCloudQuery = function(podcast) {
     var feedUrl = podcast.feedUrl;
     if (!feedUrl) {
-      console.log('[cloudquery] No feed URL available for podcast: ' + podcast.collectionName);
+      console.error('[cloudquery] No feed URL available for podcast: ' + podcast.collectionName);
       return false;
     }
     var urlParams = {
@@ -513,18 +519,25 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
       'selectors': '*',
     };
 
+    var fetchUrl = 'https://cloudquery.t9t.io/query?' + combineUrlParams(urlParams);
+    console.debug('[cloudquery] Fetching podcast: ' + feedUrl);
+    console.debug('[cloudquery] via URL: ' + fetchUrl);
     $http({
-      url: 'https://cloudquery.t9t.io/query?' + combineUrlParams(urlParams),
+      url: fetchUrl,
       cache: $templateCache,
     })
       .success(function(data, status) {
+        console.debug('[cloudquery] Successfully fetched podcast.');
         var jsonData = xmlToJson(data.contents[0].innerText);
         initRssChannelItems(jsonData);
         podcast.rss = jsonData.rss;
+        console.debug('[cloudquery] Successfully fetched podcast.');
+        console.debug('[cloudquery] Reformatted podcast:');
+        console.debug(podcast.rss);
         return true;
       })
       .error(function(data, status) {
-        console.log('[cloudquery] Error fetching episodes: ' + data);
+        console.error('[cloudquery] Error fetching episodes: ' + data);
         return false;
       });
   };
