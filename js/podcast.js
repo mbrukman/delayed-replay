@@ -407,6 +407,10 @@ function SearchCtrl($scope, $http, $templateCache, $timeout) {
 
       // Sanitize the description and summary by removing HTML tags.
       var desc = item.description || item['itunes:summary'] || '';
+      if (typeof desc != 'string') {
+        console.debug('Item description is not a string, but: ' + JSON.stringify(desc));
+        desc = '';
+      }
       item.description = htmlToText(desc);
     }
   }
